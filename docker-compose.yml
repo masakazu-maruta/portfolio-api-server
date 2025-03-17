@@ -1,0 +1,43 @@
+services:
+  db:
+    container_name: be_unit_db
+    image: postgres:17.2-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "54320:5432"
+
+  app:
+    container_name: be_unit_app
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    tty: true
+    ports:
+      - "18080:8080"
+    volumes:
+      - ./app/:/workspace
+    depends_on:
+      - db
+    entrypoint: ["go", "run","main.go"]
+
+  client:
+    container_name: be_unit_client
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    tty: true
+    ports:
+     - "30000:3000"
+    volumes:
+      - ./client:/workspace
+    depends_on:
+      - app
+    entrypoint: ["npm", "run","dev"]
+
+volumes:
+  postgres_data:
+
